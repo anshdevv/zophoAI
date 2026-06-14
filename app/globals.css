@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/*
+  Palette (Huemint brand-intersection):
+  #f9fbf9 — cream white   (page background)
+  #0d272c — deep teal     (headings, dark sections, footer)
+  #322d2e — espresso      (body text)
+  #5f5049 — mocha taupe   (muted text, borders)
+
+  Derived accents:
+  #3ec5c0 — vibrant teal  (interactive, highlights)
+  #c9a97a — warm gold     (secondary accent)
+*/
+
+:root {
+  --color-bg:      #f9fbf9;
+  --color-bg-alt:  #f0f4f3;
+  --color-card:    #ffffff;
+  --color-dark:    #0d272c;
+  --color-text:    #322d2e;
+  --color-muted:   #5f5049;
+  --color-subtle:  #9a8078;
+  --color-teal:    #3ec5c0;
+  --color-gold:    #c9a97a;
+  --color-border:  rgba(95, 80, 73, 0.14);
+  --color-border-strong: rgba(95, 80, 73, 0.22);
+
+  --font-inter: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #f9fbf9;
+  color: #322d2e;
+  font-family: var(--font-inter);
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f4f3; }
+::-webkit-scrollbar-thumb { background: #c9a97a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #5f5049; }
+
+/* Selection */
+::selection {
+  background: rgba(62, 197, 192, 0.18);
+  color: #0d272c;
+}
+
+/* Gradient text — for light backgrounds: deep teal → vibrant teal → gold */
+.gradient-text {
+  background: linear-gradient(135deg, #0d272c 0%, #3ec5c0 55%, #c9a97a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-teal {
+  background: linear-gradient(135deg, #2aa8a3 0%, #3ec5c0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section spacing */
+.section-padding { padding: 120px 0; }
+@media (max-width: 768px) { .section-padding { padding: 80px 0; } }
+
+/* Container */
+.container-custom {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (min-width: 640px)  { .container-custom { padding: 0 32px; } }
+@media (min-width: 1024px) { .container-custom { padding: 0 48px; } }
+
+input:focus, textarea:focus, select:focus { outline: none; }
+
+/* Marquee */
+.marquee-container { overflow: hidden; position: relative; }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Gradient text animation */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-animate { background-size: 200% 200%; animation: gradient-shift 5s ease infinite; }
+
+/* Grid overlay — dark lines on light bg */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(13, 39, 44, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 39, 44, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Card shadow — light mode */
+.shadow-card {
+  box-shadow:
+    0 1px 3px rgba(13, 39, 44, 0.06),
+    0 4px 16px rgba(13, 39, 44, 0.05);
+}
+
+.shadow-card-hover {
+  box-shadow:
+    0 4px 12px rgba(13, 39, 44, 0.08),
+    0 16px 40px rgba(13, 39, 44, 0.07);
+}
+
+/* Glow for teal elements */
+.glow-teal {
+  box-shadow: 0 0 40px rgba(62, 197, 192, 0.2);
+}
+
+/* Shimmer */
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(62,197,192,0.06), transparent);
+  animation: shimmer 3s infinite;
+}
+@keyframes shimmer { 100% { left: 100%; } }
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
