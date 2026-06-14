@@ -41,7 +41,7 @@ const reasons = [
 
 export default function WhyUs() {
   return (
-    <section className="section-padding relative" style={{ background: "#f0f4f3" }}>
+    <section id="about" className="section-padding relative" style={{ background: "#f0f4f3" }}>
       <div className="container-custom">
         <div className="text-center mb-16">
           <ScrollReveal>

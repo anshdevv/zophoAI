@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { contactFormSchema, serviceLabels } from "@/lib/validations";
 import {
   generateLeadEmailHtml,
   generateConfirmationEmailHtml,
 } from "@/lib/email-templates";
 
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Instantiate lazily so missing key only fails at runtime, not build time
-    const resend = new Resend(process.env.RESEND_API_KEY ?? "");
-
-    // Server-side validation
     const result = contactFormSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
@@ -28,13 +36,20 @@ export async function POST(request: NextRequest) {
 
     const data = result.data;
     const receiverEmail = process.env.CONTACT_RECEIVER_EMAIL;
-    const companyName   = process.env.NEXT_PUBLIC_COMPANY_NAME   ?? "Aelius AI";
-    const fromNoreply   = process.env.EMAIL_FROM_NOREPLY          ?? `noreply@aeliusai.com`;
-    const fromHello     = process.env.EMAIL_FROM_HELLO            ?? `hello@aeliusai.com`;
-    const contactEmail  = process.env.NEXT_PUBLIC_CONTACT_EMAIL   ?? fromHello;
+    const companyName  = process.env.NEXT_PUBLIC_COMPANY_NAME  || "Aelius AI";
+    const fromAddress  = process.env.SMTP_USER                 || "";
+    const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || fromAddress;
 
     if (!receiverEmail) {
-      console.error("CONTACT_RECEIVER_EMAIL environment variable is not set");
+      console.error("CONTACT_RECEIVER_EMAIL is not set");
+      return NextResponse.json(
+        { success: false, error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error("SMTP configuration is incomplete");
       return NextResponse.json(
         { success: false, error: "Server configuration error" },
         { status: 500 }
@@ -47,21 +62,20 @@ export async function POST(request: NextRequest) {
       timeStyle: "short",
     }) + " UTC";
 
-    const serviceName = serviceLabels[data.service] ?? data.service;
+    const transporter = createTransporter();
 
-    // Send both emails in parallel
-    const [leadEmailResult, confirmEmailResult] = await Promise.allSettled([
-      // Lead notification to agency
-      resend.emails.send({
-        from: `${companyName} <${fromNoreply}>`,
+    const fromField = `${companyName} <${fromAddress}>`;
+
+    const [leadResult, confirmResult] = await Promise.allSettled([
+      transporter.sendMail({
+        from: fromField,
         to: receiverEmail,
-        subject: `New Agency Lead — ${data.company}`,
+        subject: `New Lead — ${data.company}`,
         html: generateLeadEmailHtml({ ...data, submittedAt, companyName }),
         replyTo: data.email,
       }),
-      // Confirmation email to lead
-      resend.emails.send({
-        from: `${companyName} <${fromHello}>`,
+      transporter.sendMail({
+        from: fromField,
         to: data.email,
         subject: `We received your message — ${companyName}`,
         html: generateConfirmationEmailHtml({
@@ -74,27 +88,16 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
-    // Resend SDK fulfills promises even on API errors — must check both .status and .value.error
-    if (leadEmailResult.status === "rejected") {
-      console.error("Lead email network error:", leadEmailResult.reason);
+    if (leadResult.status === "rejected") {
+      console.error("Failed to send lead email:", leadResult.reason);
       return NextResponse.json(
         { success: false, error: "Failed to send message. Please try again." },
         { status: 500 }
       );
     }
-    if (leadEmailResult.value.error) {
-      console.error("Lead email Resend error:", leadEmailResult.value.error);
-      return NextResponse.json(
-        { success: false, error: `Failed to send message: ${leadEmailResult.value.error.message}` },
-        { status: 500 }
-      );
-    }
 
-    if (confirmEmailResult.status === "rejected") {
-      console.error("Confirmation email network error:", confirmEmailResult.reason);
-    } else if (confirmEmailResult.value.error) {
-      // Non-critical: lead was captured but confirmation failed
-      console.error("Confirmation email Resend error:", confirmEmailResult.value.error);
+    if (confirmResult.status === "rejected") {
+      console.error("Failed to send confirmation email:", confirmResult.reason);
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

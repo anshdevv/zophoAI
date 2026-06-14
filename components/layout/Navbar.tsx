@@ -12,7 +12,7 @@ const navLinks = [
   { label: "Services", href: "#services" },
   { label: "Work", href: "#case-studies" },
   { label: "Process", href: "#process" },
-  { label: "About", href: "#team" },
+  { label: "About", href: "#about" },
 ];
 
 const [brandMain, brandAccent] = splitBrandName(siteConfig.name);
@@ -23,10 +23,9 @@ function Logo({ dark }: { dark: boolean }) {
       <Image
         src={siteConfig.logoUrl}
         alt={siteConfig.name}
-        width={120}
-        height={32}
-        className="h-8 w-auto object-contain"
-        style={{ filter: dark ? "none" : "brightness(0) invert(1)" }}
+        width={140}
+        height={40}
+        className="h-9 w-auto object-contain"
       />
     );
   }
