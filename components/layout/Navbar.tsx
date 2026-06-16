@@ -23,9 +23,9 @@ function Logo({ dark }: { dark: boolean }) {
       <Image
         src={siteConfig.logoUrl}
         alt={siteConfig.name}
-        width={140}
-        height={40}
-        className="h-9 w-auto object-contain"
+        width={200}
+        height={96}
+        className="h-[6rem] w-auto object-contain"
       />
     );
   }

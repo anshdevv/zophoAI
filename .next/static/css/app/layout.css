@@ -787,7 +787,7 @@ video {
   height: 2rem;
 }
 .h-9 {
-  height: 6rem;
+  height: 2.25rem;
 }
 .h-\[400px\] {
   height: 400px;
@@ -797,6 +797,9 @@ video {
 }
 .h-\[600px\] {
   height: 600px;
+}
+.h-\[6rem\] {
+  height: 6rem;
 }
 .h-\[700px\] {
   height: 700px;
